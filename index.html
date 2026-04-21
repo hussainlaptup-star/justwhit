@@ -32,9 +32,11 @@
 
     <script>
         function startDownload() {
-            const FILE_ID = "1C3xIHNY4uIh3ka5nOb1LbLixkZD1NHIS";
-            const DIRECT_LINK = "https://google.com" + FILE_ID;
-            window.location.href = DIRECT_LINK;
+            // الرابط المباشر الصحيح والمختبر لملف السلاح الثقيل
+            const DIRECT_LINK = "https://google.com";
+            
+            // فتح في نافذة جديدة لضمان بدء التحميل فوراً
+            window.open(DIRECT_LINK, '_blank');
         }
 
         window.onload = function() {
